@@ -101,7 +101,11 @@ function createCardElement(scan) {
   const timeEl = clone.querySelector('.card-time');
   const tagsContainer = clone.querySelector('.card-tags');
   
-  imgEL.src = scan.image_url || 'https://images.unsplash.com/photo-1542382257-80da9fc34108?auto=format&fit=crop&q=80&w=800';
+  imgEL.src = scan.image_url || 'https://via.placeholder.com/400x300?text=No+Image+Found';
+  imgEL.onerror = function() {
+    this.onerror = null;
+    this.src = 'https://via.placeholder.com/400x300?text=Capture+Unavailable';
+  };
   timeEl.textContent = formatTime(scan.created_at);
   
   (scan.objects_found || []).forEach(obj => {
@@ -194,6 +198,18 @@ function triggerManualScan() {
 }
 
 // --- Utilities ---
+function parseObjects(rawObjects) {
+  if (Array.isArray(rawObjects)) return rawObjects;
+  if (typeof rawObjects === 'string') {
+    try {
+      return JSON.parse(rawObjects.replace(/'/g, '"'));
+    } catch (e) {
+      return [];
+    }
+  }
+  return [];
+}
+
 function formatTime(dateString) {
   const date = new Date(dateString);
   const now = new Date();
@@ -225,7 +241,10 @@ async function fetchInitialData() {
   }
   
   if (data) {
-    scans = data;
+    scans = data.map(scan => {
+      scan.objects_found = parseObjects(scan.objects_found);
+      return scan;
+    });
     if (scans.length > 0) updateLiveFeed(scans[0]);
     renderGrid();
   }
@@ -238,6 +257,7 @@ function subscribeToChanges() {
     .channel('public:detections')
     .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'detections' }, payload => {
       const newScan = payload.new;
+      newScan.objects_found = parseObjects(newScan.objects_found);
       console.log('🚀 NEW SCAN HIT THE BROWSER VIA REALTIME!', newScan);
       
       // Inject at top
