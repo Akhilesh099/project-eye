@@ -2,12 +2,11 @@
 const SUPABASE_URL = 'https://fuuwbjvroywribizpcrw.supabase.co'; 
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ1dXdianZyb3l3cmliaXpwY3J3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM5Njk1ODcsImV4cCI6MjA4OTU0NTU4N30.mgmjwzdgMT91qXHKRL1OZ_dbvjcxSCcEHRK75B3U2ZQ'; 
 
-// Initialize Client
-let supabase;
-try {
-  supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-} catch (error) {
-  console.warn("Supabase not fully configured yet. Running in demo mode.");
+// Initialize Client (Fix: Removed 'let supabase' and used a direct check)
+const supabase = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
+
+if (!supabase) {
+  console.warn("Supabase script not loaded. Running in demo mode.");
 }
 
 // --- State ---
@@ -228,7 +227,7 @@ function subscribeToChanges() {
     .channel('public:detections')
     .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'detections' }, payload => {
       const newScan = payload.new;
-      console.log('New detection received over Realtime:', newScan);
+      console.log('🚀 NEW SCAN HIT THE BROWSER VIA REALTIME!', newScan);
       
       // Inject at top
       scans.unshift(newScan);
