@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Project Eye - Dashboard</title>
+  
+  <!-- Supabase CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Custom Styles -->
+  <link rel="stylesheet" href="styles.css">
+  
+  <!-- Tailwind Config Customization -->
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+          },
+          colors: {
+            space: {
+              900: '#0a0a0a',
+              800: '#141414',
+              700: '#1f1f1f',
+            },
+            neon: {
+              green: '#3ecf8e', // Supabase green
+            }
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-space-900 text-white font-sans antialiased min-h-screen flex flex-col hidden-scrollbars">
+  
+  <!-- Header / Live Stats -->
+  <header class="border-b border-space-700 bg-space-800/80 backdrop-blur-md sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col sm:flex-row justify-between items-center gap-4">
+      <div class="flex items-center gap-3">
+        <div class="w-8 h-8 rounded-full bg-neon-green/20 flex items-center justify-center shadow-[0_0_15px_rgba(62,207,142,0.5)]">
+          <svg class="w-5 h-5 text-neon-green" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+          </svg>
+        </div>
+        <h1 class="text-xl font-bold tracking-wider text-gray-100 uppercase">Project Eye</h1>
+      </div>
+      
+      <div class="flex items-center gap-6 text-sm font-medium">
+        <div class="flex flex-col items-center">
+          <span class="text-gray-400 text-xs uppercase tracking-widest">Total Scans</span>
+          <span id="stat-total-scans" class="text-neon-green text-lg font-bold">0</span>
+        </div>
+        <div class="flex flex-col items-center">
+          <span class="text-gray-400 text-xs uppercase tracking-widest">Unique Objects</span>
+          <span id="stat-unique-objects" class="text-neon-green text-lg font-bold">0</span>
+        </div>
+        <div class="flex items-center gap-2 bg-space-700 px-3 py-1.5 rounded-full border border-space-700">
+          <div class="w-2.5 h-2.5 rounded-full bg-neon-green animate-pulse shadow-[0_0_8px_rgba(62,207,142,0.8)]"></div>
+          <span id="stat-system-status" class="text-xs uppercase tracking-widest text-gray-300">Online</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full flex flex-col gap-8">
+    
+    <!-- Top Section: Live Feed & Controls -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      
+      <!-- Live Feed Simulation -->
+      <section class="lg:col-span-2 relative">
+        <div class="absolute inset-0 bg-gradient-to-tr from-neon-green/5 to-transparent rounded-xl pointer-events-none z-10"></div>
+        <div class="relative bg-space-800 border border-space-700 rounded-xl overflow-hidden shadow-2xl group flex flex-col h-full min-h-[400px]">
+          <!-- Feed Header -->
+          <div class="px-4 py-3 border-b border-space-700 flex justify-between items-center bg-space-800/50 z-20 absolute top-0 w-full backdrop-blur-sm">
+            <div class="flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-red-500 animate-ping absolute opacity-75"></span>
+              <span class="w-2 h-2 rounded-full bg-red-500 relative"></span>
+              <h2 class="text-xs font-semibold tracking-widest uppercase text-gray-300">Live View</h2>
+            </div>
+            <span class="text-xs font-mono text-gray-500" id="live-timestamp">Waiting for transmission...</span>
+          </div>
+          
+          <!-- Feed Content -->
+          <div class="flex-grow relative bg-black flex items-center justify-center overflow-hidden">
+             <!-- Placeholder Background Pattern -->
+             <div class="absolute inset-0 opacity-20" style="background-image: radial-gradient(#3ecf8e 1px, transparent 1px); background-size: 20px 20px;"></div>
+             <!-- Scanning Line UI -->
+             <div class="absolute top-0 w-full h-0.5 bg-neon-green/50 shadow-[0_0_15px_#3ecf8e] z-10 scanner-line"></div>
+             <!-- The Image -->
+             <img id="live-feed-image" src="" alt="Live Feed" class="object-cover w-full h-full opacity-60 transition-opacity duration-700 ease-in-out hidden" />
+             <!-- Empty State -->
+             <div id="live-feed-empty" class="text-center z-10 flex flex-col items-center gap-3">
+               <svg class="w-12 h-12 text-space-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+               </svg>
+               <span class="text-sm text-gray-500 tracking-wider">AWAITING SENSOR TRIGGER</span>
+             </div>
+          </div>
+        </div>
+      </section>
+      
+      <!-- Controls -->
+      <section class="flex flex-col gap-6">
+        <!-- Manual Scan -->
+        <div class="bg-space-800 border border-space-700 rounded-xl p-6 shadow-xl relative overflow-hidden flex flex-col justify-center min-h-[180px]">
+          <div class="absolute top-0 right-0 w-32 h-32 bg-neon-green/10 blur-3xl rounded-full translate-x-1/2 -translate-y-1/2"></div>
+          <h2 class="text-sm font-semibold tracking-widest text-gray-400 uppercase mb-4">Command Link</h2>
+          <p class="text-xs text-gray-500 mb-6 line-clamp-2">Manually ping the remote camera module to force an immediate scan and analysis.</p>
+          <button id="btn-scan-now" class="relative group w-full py-4 bg-transparent border border-neon-green rounded-lg overflow-hidden transition-all hover:shadow-[0_0_20px_rgba(62,207,142,0.3)] focus:outline-none focus:ring-2 focus:ring-neon-green focus:ring-offset-2 focus:ring-offset-space-900 active:scale-[0.98]">
+            <div class="absolute inset-0 bg-neon-green/10 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out"></div>
+            <span class="relative flex items-center justify-center gap-2 text-neon-green font-bold tracking-widest uppercase text-sm">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+              Scan Now
+            </span>
+          </button>
+        </div>
+        
+        <!-- Filter -->
+        <div class="bg-space-800 border border-space-700 rounded-xl p-6 shadow-xl flex-grow">
+          <h2 class="text-sm font-semibold tracking-widest text-gray-400 uppercase mb-4">Filter Log</h2>
+          <div class="relative">
+            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <svg class="h-5 w-5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+            </div>
+            <input type="text" id="input-filter" class="w-full bg-space-900 border border-space-700 text-gray-300 sm:text-sm rounded-lg focus:ring-neon-green focus:border-neon-green block pl-10 p-3 placeholder-gray-600 transition-colors" placeholder="Filter by object (e.g. Person)...">
+          </div>
+          <div class="mt-4">
+             <span class="text-xs text-gray-500 block mb-2">Quick Filters:</span>
+             <div class="flex flex-wrap gap-2" id="quick-filters">
+                <!-- Injected via JS -->
+             </div>
+          </div>
+        </div>
+      </section>
+    </div>
+    
+    <!-- Detection History Grid -->
+    <section>
+      <div class="flex justify-between items-end mb-6 border-b border-space-700 pb-3">
+        <h2 class="text-lg font-bold tracking-widest text-gray-200 uppercase">Detection History</h2>
+        <span class="text-xs text-neon-green animate-pulse" id="sync-status">Simulated Local Sync</span>
+      </div>
+      
+      <div id="detection-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <!-- Cards Injected Here -->
+      </div>
+      
+      <!-- Empty DB State -->
+      <div id="empty-history-state" class="hidden flex-col items-center justify-center py-20 text-space-700">
+         <svg class="w-16 h-16 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 002-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+         <p class="text-lg font-medium text-gray-500">No detections found in the log.</p>
+      </div>
+    </section>
+
+  </main>
+  
+  <!-- Template for Scan Card -->
+  <template id="scan-card-template">
+    <div class="scan-card bg-space-800 border border-space-700 rounded-xl overflow-hidden shadow-lg transition-all duration-500 hover:border-gray-500 hover:shadow-[0_0_20px_rgba(62,207,142,0.15)] hover:-translate-y-1 flex flex-col h-[320px] opacity-0 transform translate-y-4">
+      <!-- Media -->
+      <div class="relative h-48 bg-space-900 border-b border-space-700 overflow-hidden group">
+        <div class="absolute inset-0 bg-neon-green/20 mix-blend-overlay z-10 transition-opacity duration-300 opacity-0 group-hover:opacity-100"></div>
+        <img src="" alt="Detection Snapshot" class="card-img w-full h-full object-cover sm:object-cover transition-transform duration-700 group-hover:scale-110" loading="lazy">
+        <!-- Timestamp badge -->
+        <div class="absolute top-3 right-3 bg-black/70 backdrop-blur-sm border border-space-700 px-2.5 py-1 rounded text-[10px] font-mono font-medium text-gray-300 z-20 shadow-md flex items-center gap-1.5">
+          <svg class="w-3 h-3 text-neon-green" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+          <span class="card-time"></span>
+        </div>
+      </div>
+      <!-- Body -->
+      <div class="p-4 flex flex-col flex-grow bg-gradient-to-b from-space-800 to-space-900">
+        <h3 class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Detected Objects</h3>
+        <div class="card-tags flex flex-wrap gap-2 overflow-y-auto hidden-scrollbars max-h-20">
+          <!-- Tags go here -->
+        </div>
+      </div>
+    </div>
+  </template>
+
+  <script src="app.js"></script>
+</body>
+</html>
