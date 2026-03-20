@@ -60,7 +60,7 @@ function renderGrid() {
   
   const filtered = scans.filter(scan => {
     if (!currentFilter) return true;
-    return scan.objects.some(obj => obj.toLowerCase().includes(currentFilter));
+    return scan.objects_found.some(obj => obj.toLowerCase().includes(currentFilter));
   });
   
   if (filtered.length === 0) {
@@ -99,7 +99,7 @@ function createCardElement(scan) {
   imgEL.src = scan.image_url;
   timeEl.textContent = formatTime(scan.created_at);
   
-  scan.objects.forEach(obj => {
+  scan.objects_found.forEach(obj => {
     const tag = document.createElement('span');
     tag.className = 'px-2 py-1 text-[11px] uppercase tracking-wider font-semibold rounded bg-space-700 text-neon-green border border-neon-green/30 whitespace-nowrap';
     tag.textContent = obj;
@@ -125,7 +125,7 @@ function updateStats() {
   
   uniqueObjectsMap.clear();
   scans.forEach(scan => {
-    scan.objects.forEach(obj => uniqueObjectsMap.set(obj.toLowerCase(), obj));
+    scan.objects_found.forEach(obj => uniqueObjectsMap.set(obj.toLowerCase(), obj));
   });
   statObjectsEl.textContent = uniqueObjectsMap.size;
 }
@@ -136,7 +136,7 @@ function updateQuickFilters() {
   // Get top 5 objects
   const objCounts = {};
   scans.forEach(scan => {
-    scan.objects.forEach(obj => {
+    scan.objects_found.forEach(obj => {
       objCounts[obj] = (objCounts[obj] || 0) + 1;
     });
   });
@@ -237,7 +237,7 @@ function subscribeToChanges() {
       updateLiveFeed(newScan);
       
       // If no filter or matches filter, prepend to grid
-      if (!currentFilter || newScan.objects.some(obj => obj.toLowerCase().includes(currentFilter))) {
+      if (!currentFilter || newScan.objects_found.some(obj => obj.toLowerCase().includes(currentFilter))) {
         const card = createCardElement(newScan);
         gridEl.prepend(card);
         
@@ -278,19 +278,19 @@ function loadDemoData() {
       id: demoIdCounter++,
       created_at: new Date(Date.now() - 5 * 60000).toISOString(),
       image_url: mockImages[0],
-      objects: ['Person', 'Backpack']
+      objects_found: ['Person', 'Backpack']
     },
     {
       id: demoIdCounter++,
       created_at: new Date(Date.now() - 45 * 60000).toISOString(),
       image_url: mockImages[1],
-      objects: ['Person', 'Laptop', 'Coffee Cup']
+      objects_found: ['Person', 'Laptop', 'Coffee Cup']
     },
     {
       id: demoIdCounter++,
       created_at: new Date(Date.now() - 120 * 60000).toISOString(),
       image_url: mockImages[2],
-      objects: ['Cell Phone', 'Notebook']
+      objects_found: ['Cell Phone', 'Notebook']
     }
   ];
   
@@ -310,14 +310,14 @@ function addMockScan() {
     id: demoIdCounter++,
     created_at: new Date().toISOString(),
     image_url: mockImages[Math.floor(Math.random() * mockImages.length)],
-    objects: [...new Set(pickedObjects)]
+    objects_found: [...new Set(pickedObjects)]
   };
   
   scans.unshift(newScan);
   updateLiveFeed(newScan);
   
   // Real-time grid injection simulation
-  if (!currentFilter || newScan.objects.some(obj => obj.toLowerCase().includes(currentFilter))) {
+  if (!currentFilter || newScan.objects_found.some(obj => obj.toLowerCase().includes(currentFilter))) {
     const card = createCardElement(newScan);
     gridEl.prepend(card);
     
