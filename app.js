@@ -95,20 +95,24 @@ function renderGrid() {
 }
 
 function createCardElement(scan) {
+  console.log("Creating card for scan:", scan);
+
   const clone = template.content.cloneNode(true);
   const cardDiv = clone.querySelector('.scan-card');
   const imgEL = clone.querySelector('.card-img');
   const timeEl = clone.querySelector('.card-time');
   const tagsContainer = clone.querySelector('.card-tags');
   
-  imgEL.src = scan.image_url || 'https://via.placeholder.com/400x300?text=No+Image+Found';
+  const cleanUrl = scan.image_url ? scan.image_url.replace(/['"]+/g, '') : '';
+  imgEL.src = cleanUrl || 'https://via.placeholder.com/400x300?text=No+Image+Found';
   imgEL.onerror = function() {
     this.onerror = null;
     this.src = 'https://via.placeholder.com/400x300?text=Capture+Unavailable';
   };
   timeEl.textContent = formatTime(scan.created_at);
   
-  (scan.objects_found || []).forEach(obj => {
+  const safeObjects = Array.isArray(scan.objects_found) ? scan.objects_found : [];
+  safeObjects.forEach(obj => {
     const tag = document.createElement('span');
     tag.className = 'px-2 py-1 text-[11px] uppercase tracking-wider font-semibold rounded bg-space-700 text-neon-green border border-neon-green/30 whitespace-nowrap';
     tag.textContent = obj;
@@ -116,7 +120,7 @@ function createCardElement(scan) {
   });
   
   cardDiv.dataset.id = scan.id;
-  return clone;
+  return cardDiv;
 }
 
 function updateLiveFeed(scan) {
