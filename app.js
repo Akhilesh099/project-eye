@@ -2,11 +2,16 @@
 const SUPABASE_URL = 'https://fuuwbjvroywribizpcrw.supabase.co'; 
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ1dXdianZyb3l3cmliaXpwY3J3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM5Njk1ODcsImV4cCI6MjA4OTU0NTU4N30.mgmjwzdgMT91qXHKRL1OZ_dbvjcxSCcEHRK75B3U2ZQ'; 
 
-// Initialize Client (Fix: Removed 'let supabase' and used a direct check)
-const supabase = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
+// FIX: We check if it exists, and only create it if 'supabase' isn't already a global variable
+let supabaseClient; 
 
-if (!supabase) {
-  console.warn("Supabase script not loaded. Running in demo mode.");
+function getSupabase() {
+    if (supabaseClient) return supabaseClient;
+    if (window.supabase) {
+        supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        return supabaseClient;
+    }
+    return null;
 }
 
 // --- State ---
@@ -30,13 +35,14 @@ const template = document.getElementById('scan-card-template');
 // --- Initialization ---
 function init() {
   bindEvents();
+  const client = getSupabase();
   
-  if (supabase) {
+  if (client) {
+    console.log("🚀 Connection Established to Supabase!");
     fetchInitialData();
     subscribeToChanges();
   } else {
-    // Demo Mode Initialization
-    console.log("Initializing Demo Mode Data...");
+    console.warn("⚠️ Supabase SDK not found. Check your index.html script tags.");
     loadDemoData();
   }
 }
@@ -179,7 +185,8 @@ function triggerManualScan() {
       span.innerHTML = originalText;
       
       // If demo mode, inject a mock card after scan
-      if (!supabase) {
+      const client = getSupabase();
+      if (!client) {
         addMockScan();
       }
     }, 2000);
@@ -204,7 +211,9 @@ function formatTime(dateString) {
 // --- Supabase Integration ---
 
 async function fetchInitialData() {
-  const { data, error } = await supabase
+  const client = getSupabase();
+  if (!client) return;
+  const { data, error } = await client
     .from('detections')
     .select('*')
     .order('created_at', { ascending: false })
@@ -223,7 +232,9 @@ async function fetchInitialData() {
 }
 
 function subscribeToChanges() {
-  supabase
+  const client = getSupabase();
+  if (!client) return;
+  client
     .channel('public:detections')
     .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'detections' }, payload => {
       const newScan = payload.new;
