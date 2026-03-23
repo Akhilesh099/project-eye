@@ -190,14 +190,19 @@ async function triggerManualScan() {
   if (client) {
     const channel = client.channel('project-eye-commands');
     
-    await channel.subscribe(async (status) => {
+    channel.subscribe(async (status) => {
       if (status === 'SUBSCRIBED') {
-        await channel.send({
+        const response = await channel.send({
           type: 'broadcast',
           event: 'manual-scan',
-          payload: { timestamp: Date.now() },
+          payload: { message: 'Triggering Camera Unit' },
         });
-        console.log("Ping sent to camera!");
+        
+        console.log("Broadcast status:", response);
+        
+        if (response === 'ok' || response === 'send_message') {
+          alert("Scan command sent to Python unit!");
+        }
       }
     });
   }
