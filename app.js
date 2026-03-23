@@ -180,12 +180,28 @@ function updateQuickFilters() {
   });
 }
 
-function triggerManualScan() {
+async function triggerManualScan() {
   btnScanNow.classList.add('opacity-50', 'pointer-events-none');
   const span = btnScanNow.querySelector('span');
   const originalText = span.innerHTML;
   span.innerHTML = 'Sending Signal...';
   
+  const client = getSupabase();
+  if (client) {
+    const channel = client.channel('project-eye-commands');
+    
+    await channel.subscribe(async (status) => {
+      if (status === 'SUBSCRIBED') {
+        await channel.send({
+          type: 'broadcast',
+          event: 'manual-scan',
+          payload: { timestamp: Date.now() },
+        });
+        console.log("Ping sent to camera!");
+      }
+    });
+  }
+
   setTimeout(() => {
     span.innerHTML = 'Signal Sent!';
     setTimeout(() => {
@@ -193,7 +209,6 @@ function triggerManualScan() {
       span.innerHTML = originalText;
       
       // If demo mode, inject a mock card after scan
-      const client = getSupabase();
       if (!client) {
         addMockScan();
       }
