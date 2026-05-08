@@ -1,6 +1,6 @@
 // --- Supabase Configuration ---
-const SUPABASE_URL = 'https://fuuwbjvroywribizpcrw.supabase.co'; 
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ1dXdianZyb3l3cmliaXpwY3J3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM5Njk1ODcsImV4cCI6MjA4OTU0NTU4N30.mgmjwzdgMT91qXHKRL1OZ_dbvjcxSCcEHRK75B3U2ZQ'; 
+const SUPABASE_URL = 'supabase key'; 
+const SUPABASE_KEY = 'key'; 
 
 // FIX: We check if it exists, and only create it if 'supabase' isn't already a global variable
 let supabaseClient; 
