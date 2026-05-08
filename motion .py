@@ -10,8 +10,8 @@ import threading
 import numpy as np
 
 # --- CONFIG ---
-URL = "https://fuuwbjvroywribizpcrw.supabase.co"
-KEY = "sb_secret_fF3gDQrcmO1_EvUgrzGs4w_q5Yh_3KC"
+URL = "key"
+KEY = "kwy
 
 print("🧠 Project Eye: Booting with Motion Detection...")
 model = YOLO('yolov8n.pt')
