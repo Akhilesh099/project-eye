@@ -12,8 +12,8 @@ import threading
 
 # --- CONFIG ---
 URL = 'http://192.168.1.9/cam-mid.jpg' 
-SUPABASE_URL = "https://fuuwbjvroywribizpcrw.supabase.co"
-SUPABASE_KEY = "sb_secret_fF3gDQrcmO1_EvUgrzGs4w_q5Yh_3KC"
+SUPABASE_URL = key
+SUPABASE_KEY =key
 
 print("🧠 Project Eye: Booting Motion Detection...")
 model = YOLO('yolov8n.pt')
